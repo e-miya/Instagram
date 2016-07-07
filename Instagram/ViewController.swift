@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     }
 //    override func viewWillAppear(animated: Bool) {
 //        super.viewWillAppear(animated)
-//    }
+//    } 説明文＆序盤の画面でViewWill〜ですが、途中でviewDid〜に…
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)

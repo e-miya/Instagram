@@ -20,20 +20,21 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        super.viewDidLoad()
+        tableView.delegate = self
+        tableView.dataSource = self
         let nib = UINib(nibName: "PostTableViewCell", bundle: nil)
         tableView.registerNib(nib, forCellReuseIdentifier: "Cell")
         tableView.rowHeight = UITableViewAutomaticDimension
         
-        //要素が追加されたらpostArrayに追加してTableViewを再表示する
-        FIRDatabase.database().reference().child(CommonConst.PostPATH).observeEventType(.ChildAdded, withBlock: {snapshot in
+        // 要素が追加されたらpostArrayに追加してTableViewを再表示する
+        FIRDatabase.database().reference().child(CommonConst.PostPATH).observeEventType(.ChildAdded, withBlock: { snapshot in
             
-            //PostDataクラスを生成して受け取ったデータを生成する
+            // PostDataクラスを生成して受け取ったデータを設定する
             if let uid = FIRAuth.auth()?.currentUser?.uid {
                 let postData = PostData(snapshot: snapshot, myId: uid)
                 self.postArray.insert(postData, atIndex: 0)
                 
-                //TableViewを再表示する
+                // TableViewを再表示する
                 self.tableView.reloadData()
             }
         })
@@ -84,6 +85,8 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
         //セルのボタンアクションをソースコードで設定する
 //        cell.likeButton.addTarget(self, action: "handleButton:event:", forControlEvents: UIControlEvents.TouchUpInside)
         cell.likeButton.addTarget(self, action: #selector(self.handleButton(_:event:)), forControlEvents: UIControlEvents.TouchUpInside)    //変更
+        //コメントボタンにアクション追加
+        cell.commentButton.addTarget(self, action: #selector(self.handleButton(_:event:)), forControlEvents: UIControlEvents.TouchUpInside)    //課題追加
         
         //UILabelの行数が変わっている可能性があるので再描画させる
         cell.layoutIfNeeded()
@@ -113,30 +116,51 @@ class HomeViewController: UIViewController, UITableViewDataSource, UITableViewDe
         
         //Firebaseに保存するデータの準備
         if let uid = FIRAuth.auth()?.currentUser?.uid {
-            if postData.isLiked {
-                //すでにいいねをしていた場合はいいねを解除するためIDを取り除く
-                var index = -1
-                for likeId in postData.likes {
-                    if likeId == uid{
-                        //削除するためにインデックスを保持しておく
-                        index = postData.likes.indexOf(likeId)!
-                        break
+            // ボタンアクションを分岐（課題追加）
+            switch sender.tag {
+            case 0:
+                if postData.isLiked {
+                    //すでにいいねをしていた場合はいいねを解除するためIDを取り除く
+                    var index = -1
+                    for likeId in postData.likes {
+                        if likeId == uid{
+                            //削除するためにインデックスを保持しておく
+                            index = postData.likes.indexOf(likeId)!
+                            break
+                        }
                     }
+                    postData.likes.removeAtIndex(index)
+                }else{
+                    postData.likes.append(uid)
                 }
-                postData.likes.removeAtIndex(index)
-            }else{
-                postData.likes.append(uid)
+                break
+            case 1:
+                let imageViewController = self.storyboard?.instantiateViewControllerWithIdentifier("PostComment") as! PostCommentViewController
+                imageViewController.postData = postData
+                self.presentViewController(imageViewController, animated: true, completion: nil)
+               
+                break
+            default:
+                break
             }
-            let imageString = postData.imageString
-            let name = postData.name
-            let caption = postData.caption
-            let time = (postData.date?.timeIntervalSinceReferenceDate)! as NSTimeInterval
-            let likes = postData.likes
-        
-            //辞書を作成してFirebaseに保存する
-            let post = ["caption": caption!, "image": imageString!, "name": name!, "time": time, "likes": likes]
-            let postRef = FIRDatabase.database().reference().child(CommonConst.PostPATH)
-            postRef.child(postData.id!).setValue(post)
+            
+            if sender.tag != 1 {
+                let imageString = postData.imageString
+                let name = postData.name
+                let caption = postData.caption
+                let time = (postData.date?.timeIntervalSinceReferenceDate)! as NSTimeInterval
+                let likes = postData.likes
+                var comment: [String] = []
+                if !postData.commentList.isEmpty{
+                    comment = postData.commentList
+                }
+            
+                //辞書を作成してFirebaseに保存する
+                let post = ["caption": caption!, "image": imageString!, "name": name!, "time": time, "likes": likes, "comment": comment]     //課題変更
+                let postRef = FIRDatabase.database().reference().child(CommonConst.PostPATH)
+                postRef.child(postData.id!).setValue(post)
+                
+            }
         }
         
     }

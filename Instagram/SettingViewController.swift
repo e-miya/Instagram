@@ -64,11 +64,18 @@ class SettingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         // NSUserDefaultsから表示名を取得してTextFieldに設定する
         let ud = NSUserDefaults.standardUserDefaults()
-        let name = ud.objectForKey(CommonConst.DisplayNameKey) as! String
-        displayNameTextField.text = name
+        if ud.objectForKey(CommonConst.DisplayNameKey) == nil{
+            dispatch_async(dispatch_get_main_queue()) {
+                let loginViewController = self.storyboard?.instantiateViewControllerWithIdentifier("Login")
+                self.presentViewController(loginViewController!, animated: true, completion: nil)
+            }
+            
+        }else{
+            let name = ud.objectForKey(CommonConst.DisplayNameKey) as! String
+            displayNameTextField.text = name            
+        }
 
         // Do any additional setup after loading the view.
     }

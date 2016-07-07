@@ -19,6 +19,7 @@ class PostData: NSObject {
     var date: NSDate?
     var likes: [String] = []
     var isLiked: Bool = false
+    var commentList: [String] = []
     
     init(snapshot: FIRDataSnapshot, myId: String){
         id = snapshot.key
@@ -41,6 +42,9 @@ class PostData: NSObject {
                 isLiked = true
                 break
             }
+        }
+        if let commentArray = valueDictionary["comment"] as? [String] {
+            commentList = commentArray.sort()
         }
         
         self.date = NSDate(timeIntervalSinceReferenceDate: valueDictionary["time"] as! NSTimeInterval)

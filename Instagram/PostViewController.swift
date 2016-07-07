@@ -33,7 +33,7 @@ class PostViewController: UIViewController {
         let time = NSDate.timeIntervalSinceReferenceDate()
         
         // 辞書を作成してFirebaseに保存する
-        let postData = ["caption": textField.text!, "image": imageData!.base64EncodedDataWithOptions(.Encoding64CharacterLineLength),"name" :name, "time": time]
+        let postData = ["caption": textField.text!, "image": imageData!.base64EncodedStringWithOptions(.Encoding64CharacterLineLength),"name" :name, "time": time]
         postRef.childByAutoId().setValue(postData)
         
         // HUDで投稿完了を表示する
@@ -46,6 +46,8 @@ class PostViewController: UIViewController {
     
     // キャンセルボタンをタップした時に呼ばれる
     @IBAction func handleCancelButton(sender: AnyObject) {
+        // 画面を閉じる
+        dismissViewControllerAnimated(true, completion: nil)
     }
     
     
