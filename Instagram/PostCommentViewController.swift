@@ -26,7 +26,9 @@ class PostCommentViewController: UIViewController, UITableViewDataSource, UITabl
             if !(commentTextField.text!.characters.isEmpty) {
 
                 let imageString = postData.imageString
-                let name = postData.name
+                // NSUserDefaultから表示名を取得する
+                let ud = NSUserDefaults.standardUserDefaults()
+                let name = ud.objectForKey(CommonConst.DisplayNameKey) as! String
                 let caption = postData.caption
                 let time = (postData.date?.timeIntervalSinceReferenceDate)! as NSTimeInterval
                 let likes = postData.likes
@@ -36,7 +38,7 @@ class PostCommentViewController: UIViewController, UITableViewDataSource, UITabl
                 postData.commentList = commentArray
 
                 //辞書を作成してFirebaseに保存する
-                let post = ["caption": caption!, "image": imageString!, "name": name!, "time": time, "likes": likes, "comment": commentArray]
+                let post = ["caption": caption!, "image": imageString!, "name": name, "time": time, "likes": likes, "comment": commentArray]
                 let postRef = FIRDatabase.database().reference().child(CommonConst.PostPATH)
                 postRef.child(postData.id!).setValue(post)
 
